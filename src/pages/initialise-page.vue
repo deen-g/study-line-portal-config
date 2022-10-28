@@ -38,33 +38,33 @@ import { localForage } from "src/constants/localforge"
 export default {
   // name: 'PageName',
   setup :() => {
+    const router = useRouter()
+    const route = useRoute()
+    const auth = useAuthStore()
     onMounted(async () => {
-      const router = useRouter()
-      const route = useRoute()
-      const response = await api.get(apis.session)
-      console.log(response)
-      let {status, data} = response
-      if(status && data){
-        await loadServiceData(data, router, route)
+      if(auth.isLoggedIn){
+        await loadServiceData()
       } else {
-        await router.push({name :'login', query :route.query})
+        const response = await api.get(apis.authorised.session)
+        console.log(response)
+        let {status, data} = response
+        if(status && data){
+          localForage.setItem(process.env.auth, data.token)
+          await auth.setAuthUser(data.user)
+          await loadServiceData(data)
+        } else {
+          localForage.removeItem(process.env.auth)
+          await router.push({name :'login', query :route.query})
+        }
       }
     })
-    const loadServiceData = async (data, router, route) => {
-      const auth = useAuthStore()
-      if(data.auth){
-        localForage.setItem(process.env.auth, data.auth.accessToken)
-        await auth.setAuthUser(data.auth)
-        let path = {name :'dashboard'}
-        if(route.query.next){
-          path = {path :route.query.next}
-        }
-        await router.push(path)
-      } else {
-        await router.push({name :'login', query :route.query})
+    const loadServiceData = async (data = false) => {
+      console.log('authenticated', data)
+      let path = {name :'dashboard'}
+      if(route.query.next){
+        path = {path :route.query.next}
       }
-
-      console.log('authenticated')
+      await router.push(path)
     }
   }
 }

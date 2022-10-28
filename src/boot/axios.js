@@ -1,6 +1,7 @@
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { notifications } from "boot/notification"
+import { localForage } from "src/constants/localforge"
 // import { localForage } from "src/constants/localforge"
 
 // Be careful when using SSR for cross-request state pollution
@@ -15,12 +16,12 @@ const api = axios.create({
     'Content-Type' :'application/json',
     'x-access' :process.env.portal
   },
-  withCredentials :true,
-  // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
-  xsrfCookieName :'XSRF-TOKEN', // default
-
-  // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-  xsrfHeaderName :'X-XSRF-TOKEN' // default
+  // withCredentials :true,
+  // // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+  // xsrfCookieName :'XSRF-TOKEN', // default
+  //
+  // // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+  // xsrfHeaderName :'X-XSRF-TOKEN' // default
 })
 export default boot(async ({app}) => {
   api.defaults.baseURL = process.env.api
@@ -29,9 +30,10 @@ export default boot(async ({app}) => {
 // Add a request interceptor
   api.interceptors.request.use(function (config){
     // Do something before request is sent
-    let token = localStorage.getItem(process.env.auth)
+    let token = localForage.getItem(process.env.auth)
     if(token){
       config.headers['x-auth-token'] = `${token}`;
+      config.headers['authorization'] = `Bearer ${token}`;
     }
     return config;
   }, function (error){

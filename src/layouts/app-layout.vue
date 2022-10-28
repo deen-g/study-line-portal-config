@@ -122,6 +122,7 @@ import { useAuthStore } from "stores/auth"
 import { api } from "boot/axios"
 import apis from "src/constants/apis"
 import { DateTime } from "luxon"
+import { localForage } from "src/constants/localforge"
 
 export default defineComponent({
   name :'AuthLayout',
@@ -157,11 +158,16 @@ export default defineComponent({
     const logout = async () => {
       const response = await api.get(apis.authorised.config.logout)
       let {status, data, errors} = response
-      auth.clearAuthUser()
-      console.log(status, data, errors)
-      let dt = DateTime.now().toISO()
-      window.localStorage.setItem('last-update', dt)
-      await router.push({name :'initialise'})
+      if(status){
+        auth.clearAuthUser()
+        console.log(status, data, errors)
+        let dt = DateTime.now().toISO()
+        localForage.setItem('last-update', dt)
+        await localForage.removeItem(process.env.auth)
+        await router.push({name :'initialise'})
+      }
+
+
     }
     onMounted(async () => {
       bus.on('auth:is_logged_in', () => {

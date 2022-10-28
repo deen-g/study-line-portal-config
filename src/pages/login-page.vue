@@ -61,6 +61,7 @@ import { api } from "boot/axios"
 import apis from "src/constants/apis"
 import { useAuthStore } from "stores/auth"
 import { useRoute, useRouter } from "vue-router/dist/vue-router"
+import { localForage } from "src/constants/localforge"
 
 
 export default {
@@ -78,10 +79,12 @@ export default {
     let onSubmit = async () => {
       is_loading.value = true
       const response = await api.post(apis.public.portal.account.config.login, {...input.value})
+      console.log(response)
       let {status, data, errors} = response
       is_loading.value = false
       if(status){
-        await auth.setAuthUser(data)
+        await auth.setAuthUser(data.user)
+        localForage.setItem(process.env.auth, data.token)
         await router.push({name :'initialise', query :route.query})
       } else {
         //do errors

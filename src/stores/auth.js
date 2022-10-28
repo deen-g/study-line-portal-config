@@ -3,7 +3,6 @@ import { bus } from 'boot/global-event-bus'
 // eslint-disable-next-line no-unused-vars
 export const useAuthStore = defineStore('auth', {
   state :() => ({
-    auth :{},
     user :{}
   }),
 
@@ -24,18 +23,16 @@ export const useAuthStore = defineStore('auth', {
 
   actions :{
     clearAuthUser(){
-      this.auth = {}
       this.user = {}
       bus.emit('emit:account:authenticate', false)
     },
-    setAuthUser(data){
-      bus.emit('emit:account:authenticate', Object.hasOwnProperty.call(data.user, '_id'))
-      this.auth = data
-      if(data.user.name){
-        const matches = data.user.name.match(/\b(\w)/g)
-        data.user.acronym = matches.join('')
+    setAuthUser(user){
+      bus.emit('emit:account:authenticate', Object.hasOwnProperty.call(user, '_id'))
+      if(user.name){
+        const matches = user.name.match(/\b(\w)/g)
+        user.acronym = matches.join('')
       }
-      this.user = data.user
+      this.user = user
     },
     setUser(data){
       if(data.name){

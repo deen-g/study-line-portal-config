@@ -1,5 +1,4 @@
 const apis = {
-  session :'session',
   public :{
     portal :{
       account :{
@@ -10,6 +9,7 @@ const apis = {
     }
   },
   authorised :{
+    session :'/authorised/config/session',
     config :{
       management :{
         configuration :{
