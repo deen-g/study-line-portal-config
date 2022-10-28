@@ -8,8 +8,8 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-const { configure } = require('quasar/wrappers')
-const { branch } = require('./config')
+const {configure} = require('quasar/wrappers')
+const {branch} = require('./config')
 module.exports = configure(async function (ctx){
   const git = await branch()
   return {
@@ -74,15 +74,17 @@ module.exports = configure(async function (ctx){
       env :{
         auth: 'sl-auth-token',
         portal :'config',
-        uri :ctx.dev ? 'http://localhost:3000' : 'https://stu-line-api.herokuapp.com',
+        api :ctx.dev
+          ? 'http://localhost:3000/api/v2'
+          : 'https://stu-line-api.herokuapp.com/api/v2',
         socket :ctx.dev ? 'http://localhost:3030' : 'https://stu-line-services.herokuapp.com',
-        git: { dev: ctx.dev, branch: git, app: 'config' }
+        git :{dev :ctx.dev, branch :git, app :'config'}
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
-      distDir: ctx.mode.spa ? 'public' : null,
+      distDir :ctx.mode.spa ? 'public' : `dist/${ctx.modeName}`
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
@@ -94,23 +96,23 @@ module.exports = configure(async function (ctx){
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer :{
-      https: !ctx.dev,
-      port: 9002,
+      https :!ctx.dev,
+      port :ctx.MODE === 'electron' ? 9002 : 8002,
       open :false // opens browser window automatically
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
     framework :{
-      config: {
-        notify: {
-          position: 'top-right',
-          timeout: 3000
+      config :{
+        notify :{
+          position :'top-right',
+          timeout :3000
         },
-        screen: {
-          bodyClasses: true // <<< add this
+        screen :{
+          bodyClasses :true // <<< add this
         }
       },
-      cssAddon: true,
+      cssAddon :true,
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
 
@@ -122,7 +124,7 @@ module.exports = configure(async function (ctx){
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog', 'Notify', 'Loading']
+      plugins :['Dialog', 'Notify', 'Loading']
     },
 
     // animations: 'all', // --- includes all animations
@@ -202,7 +204,7 @@ module.exports = configure(async function (ctx){
         // appBundleId: '',
         // appCategoryType: '',
         // osxSign: '',
-        // protocol: 'myapp://path',
+        protocol :'file://index.html'
 
         // Windows only
         // win32metadata: { ... }

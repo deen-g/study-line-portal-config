@@ -2,135 +2,166 @@ import { useAuthStore } from "stores/auth"
 
 const routeList = [
   {
-    hr: true
+    hr :true
   },
   {
-    title: 'Home',
-    icon: 'home',
-    link: 'index-page',
-    query: { page: 'home-page' }
+    title :'WEB PAGES',
+    icon :'school',
+    authorized :['web', 'auth', 'user::is::student'],
+    list :[
+      {
+        title :'Home',
+        icon :'home',
+        link :'web-pages',
+        params :{id :'home-page'},
+        authorized :['web']
+      },
+      {
+        title :'About Us',
+        caption :'Little but on study line',
+        icon :'mdi-help-network',
+        link :'web-pages',
+        params :{id :'about-page'},
+        authorized :['web']
+      },
+      {
+        title :'Services',
+        caption :'Our services and features',
+        icon :'mdi-face-agent',
+        link :'web-pages',
+        params :{id :'services-page'},
+        authorized :['web']
+      },
+      {
+        title :'Contact Us',
+        caption :'Get connected in real time',
+        icon :'mdi-card-account-phone',
+        link :'web-pages',
+        params :{id :'contact-us-page'},
+        authorized :['web']
+      },
+    ]
   },
   {
-    title: 'About Us',
-    caption: 'Little but on study line',
-    icon: 'mdi-help-network',
-    link: 'index-page',
-    query: { page: 'about-page' }
+    hr :true
   },
   {
-    title: 'Services',
-    caption: 'Our services and features',
-    icon: 'mdi-face-agent',
-    link: 'index-page',
-    query: { page: 'services-page' }
+    title :'EMAIL TEMPLATES',
+    link :'index-page',
+    query :{page :'home-page'},
+    authorized :['web']
   },
   {
-    title: 'Contact Us',
-    caption: 'Get connected in real time',
-    icon: 'mdi-card-account-phone',
-    link: 'index-page',
-    query: { page: 'contact-page' }
+    hr :true
   },
   {
-    hr: true
+    title :'SCHOOLS',
+    icon :'school',
+    authorized :['web', 'auth', 'user::is::student'],
+    list :[
+      {
+        title :'APPLICATIONS',
+        caption :'create applications for schools',
+        icon :'list',
+        link :'new-application',
+        authorized :[]
+      },
+      {
+        title :'PLANS',
+        caption :'all school application',
+        icon :'school',
+        link :'user-application',
+        authorized :[]
+      }
+    ]
+  },
+  {
+    title :'School Manager',
+    icon :'school',
+    authorized :['web', 'auth', 'user::is::admin'],
+    list :[
+      {
+        title :'School detail',
+        caption :'create applications for schools',
+        icon :'school',
+        link :'school-profile',
+        authorized :['user::has::school']
+      },
+      {
+        title :'New school',
+        caption :'create applications for schools',
+        icon :'school',
+        link :'new-school',
+        authorized :['user::create::school']
+      }
+    ]
   }
-  // {
-  //   title: 'My Applications',
-  //   caption: 'create applications for schools',
-  //   icon: 'school',
-  //   link: 'authenticated-applications'
-  // },
-  // {
-  //   title: 'Access portals',
-  //   caption: 'view and access portals',
-  //   icon: 'school',
-  //   link: 'authenticated-portal'
-  // },
-  // {
-  //   title: 'Mails',
-  //   caption: 'view and access mails',
-  //   icon: 'school',
-  //   link: 'mails'
-  // },
-  // {
-  //   hr: true
-  // },
-  // {
-  //   title: 'Create School',
-  //   caption: 'create school profiles',
-  //   icon: 'school',
-  //   link: 'create-school'
-  // }
 ]
-const store = useAuthStore()
-
-const addLink = (body, title, obj) => {
-  // console.log(body)
-  const comp = body.find(f => f.title === title)
-  if (comp) {
-    comp.list.push(obj)
-  }
-  return body
-}
-const addStudentLinks = (listings) => {
-  listings.push({
-    title: 'Application Manager',
-    icon: 'school',
-    list: []
-  })
-  listings = addLink(listings, 'Application Manager', {
-    title: 'Apply',
-    caption: 'create applications for schools',
-    icon: 'school',
-    link: 'new-application'
-  })
-  listings = addLink(listings, 'Application Manager', {
-    title: 'Applications',
-    caption: 'all school application',
-    icon: 'school',
-    link: 'user-application'
-  })
-  return listings
-}
-const addSchoolManagerLinks = (listings) => {
-  listings.push({
-    title: 'School Manager',
-    icon: 'school',
-    list: []
-  })
-  if (store.hasSchool) {
-    listings = addLink(listings, 'School Manager', {
-      title: 'School detail',
-      caption: 'create applications for schools',
-      icon: 'school',
-      link: 'school-profile',
-      params: { id: store.getSchool._id,type:'self' }
-    })
-  } else {
-    listings = addLink(listings, 'School Manager', {
-      title: 'New school',
-      caption: 'create applications for schools',
-      icon: 'school',
-      link: 'new-school'
+const auth = useAuthStore()
+const processLink = (item) => {
+  let data = {...item}
+  let check = true
+  if(item.authorized){
+    item.authorized.forEach((i) => {
+      if(check){
+        const user = auth.getUser
+        switch (i) {
+          case 'web':
+            break
+          case 'auth':
+            check = auth.isLoggedIn
+            break
+          case 'user::is::student':
+            check = !user.is_school_admin
+            break
+          case 'user::is::admin':
+            if(user.is_school_admin){
+              check = user.is_school_admin
+            } else {
+              check = false
+            }
+            break
+          case 'user::has::school':
+            if(auth.hasSchool){
+              let school_id = auth.getSchool._id
+              data.params = {id :school_id, type :'self'}
+              check = user.is_school_admin
+            } else {
+              check = false
+            }
+            break
+          case 'user::create::school':
+            if(!auth.hasSchool){
+              check = user.is_school_admin
+            } else {
+              check = false
+            }
+            break
+        }
+      }
     })
   }
-  return listings
+  delete data.authorized
+  return check ? data : check
 }
-const addLoggedInLink = (listings) => {
-  listings = listings.filter(f => f.title !== 'Application Manager')
-  listings = listings.filter(f => f.title !== 'School Manager')
-  if (store.isLoggedIn && store.isVerified) {
-    if (store.user.is_school_admin) {
-      listings = addSchoolManagerLinks(listings)
-    } else {
-      listings = addStudentLinks(listings)
+const configureLinks = (links, authorized = null) => {
+  let list = []
+  links.forEach(function (item, index, arr){
+    if(authorized){
+      item.authorized = authorized.concat(item.authorized)
     }
-  }
-  return listings
+    let obj = processLink(item)
+    if(obj){
+      if(obj.list){
+        obj.list = configureLinks(item.list, item.authorized)
+      }
+      list.push(obj)
+    }
+  })
+  return list
 }
 const links = () => {
-  let listings = routeList
-  listings = addLoggedInLink(listings)
+  let listings = configureLinks(routeList)
   return listings
 }
-export default { links }
+export default {links}

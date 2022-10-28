@@ -1,6 +1,7 @@
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { notifications } from "boot/notification"
+// import { localForage } from "src/constants/localforge"
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -12,11 +13,17 @@ const api = axios.create({
   timeout :5000,
   headers :{
     'Content-Type' :'application/json',
-    'x-portal' :process.env.portal
-  }
+    'x-access' :process.env.portal
+  },
+  withCredentials :true,
+  // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+  xsrfCookieName :'XSRF-TOKEN', // default
+
+  // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+  xsrfHeaderName :'X-XSRF-TOKEN' // default
 })
 export default boot(async ({app}) => {
-  api.defaults.baseURL = process.env.uri
+  api.defaults.baseURL = process.env.api
   console.log('axios url:', api.defaults.baseURL)
   // for use inside Vue files (Options API) through this.$axios and this.$api
 // Add a request interceptor
@@ -35,11 +42,10 @@ export default boot(async ({app}) => {
   api.interceptors.response.use(function (response){
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
+    console.log(response)
     if(response.data){
-      return {
-        status :response.data.status,
-        data :response.data.data
-      };
+      if(response.data.cookie) return {status :true, data :response.data}
+      return response.data;
     }
     return response;
   }, function (error){

@@ -1,4 +1,5 @@
 const general = {
+  configuration: 'main-app-configuration',
   user_account_create: 'user-account-create',
   user_account_login: 'user-account-login',
   user_account_verification: 'user-account-verification',

@@ -119,17 +119,20 @@ import navigations from 'src/constants/navigations'
 import PanelProfileComp from 'components/panels/panel-profile-comp.vue'
 import { bus } from 'boot/global-event-bus'
 import { useAuthStore } from "stores/auth"
+import { api } from "boot/axios"
+import apis from "src/constants/apis"
+import { DateTime } from "luxon"
 
 export default defineComponent({
-  name: 'AuthLayout',
+  name :'AuthLayout',
 
-  components: {
+  components :{
     PanelProfileComp,
     SearchMenuComp,
     EssentialLink
   },
 
-  setup () {
+  setup(){
     const auth = useAuthStore()
     const leftDrawerOpen = ref(false)
     const rightDrawerOpen = ref(false)
@@ -140,26 +143,32 @@ export default defineComponent({
     // eslint-disable-next-line no-unused-vars
     const router = useRouter()
     const login = async () => {
-      if (auth.isLoggedIn) {
+      if(auth.isLoggedIn){
         console.log('isLoggedIn')
         // toggleRightDrawer()
       } else {
         console.log('login')
-        await router.push({ name: 'sign-in' })
+        await router.push({name :'sign-in'})
       }
     }
     const closeDrawer = () => {
       leftDrawerOpen.value = false
     }
     const logout = async () => {
-      await router.push({ name: 'index-page', query: { page: 'home-page' } })
+      const response = await api.get(apis.authorised.config.logout)
+      let {status, data, errors} = response
+      auth.clearAuthUser()
+      console.log(status, data, errors)
+      let dt = DateTime.now().toISO()
+      window.localStorage.setItem('last-update', dt)
+      await router.push({name :'initialise'})
     }
     onMounted(async () => {
-      bus.$on('auth:is_logged_in', () => {
+      bus.on('auth:is_logged_in', () => {
       })
     })
     onUnmounted(() => {
-      bus.$off('auth:is_logged_in', () => {
+      bus.off('auth:is_logged_in', () => {
       })
     })
 
@@ -171,7 +180,7 @@ export default defineComponent({
     }
     return {
       page,
-      essentialLinks: list,
+      essentialLinks :list,
       leftDrawerOpen,
       toggleLeftDrawer,
       rightDrawerOpen,
